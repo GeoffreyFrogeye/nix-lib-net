@@ -239,6 +239,8 @@ in {
       #
       # > net.cidr.assignIps "192.168.100.1/24" [202 "192.168.100.74"] ["a" "b" "c"]
       # { a = "192.168.100.203"; b = "192.168.100.75"; c = "192.168.100.226"; }
+      #
+      # WARN: Does not work on IPv6 addresses with Lix 2.91+ and Nix.25+ as they ban integer overflow.
       assignIps = net: reserved: hosts: let
         cidrSize = libNet.cidr.size net;
         capacity = libNet.cidr.capacity net;
@@ -266,7 +268,8 @@ in {
         # Generates a hash (i.e. offset value) for a given hostname
         hashElem = x:
           builtins.bitAnd (capacity - 1)
-          (hexToDec (builtins.substring 0 16 (builtins.hashString "sha256" x)));
+          # 15 characters is as many hexToDec can handle (60 bits)
+          (hexToDec (builtins.substring 0 15 (builtins.hashString "sha256" x)));
         # Do linear probing. Returns the first unused value at or after the given value.
         probe = avoid: value:
           if elem value avoid
@@ -333,6 +336,8 @@ in {
       #
       # > net.mac.assignMacs "11:22:33:00:00:00" 24 ["11:22:33:1b:bd:ca"] ["a" "b" "c"]
       # { a = "11:22:33:1b:bd:cb"; b = "11:22:33:39:59:4a"; c = "11:22:33:50:7a:e2"; }
+      #
+      # WARN: Does not work with Lix 2.91+ and Nix.25+ as they ban integer overflow.
       assignMacs = base: size: reserved: hosts: let
         capacity = pow 2 size;
         baseAsInt = libNet.mac.diff base "00:00:00:00:00:00";
@@ -353,7 +358,8 @@ in {
         # Generates a hash (i.e. offset value) for a given hostname
         hashElem = x:
           builtins.bitAnd (capacity - 1)
-          (hexToDec (substring 0 16 (builtins.hashString "sha256" x)));
+          # 15 characters is as many hexToDec can handle (60 bits)
+          (hexToDec (substring 0 15 (builtins.hashString "sha256" x)));
         # Do linear probing. Returns the first unused value at or after the given value.
         probe = avoid: value:
           if elem value avoid
