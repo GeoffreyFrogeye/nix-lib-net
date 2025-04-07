@@ -27,16 +27,13 @@ let
     ;
 
   inherit (lib.trivial)
+    flip
     min
     warnIf
     ;
 
   inherit (lib.asserts)
     assertMsg
-    ;
-
-  inherit (lib.debug)
-    flip
     ;
 
   # NOTE: from <https://github.com/oddlama/nixos-extra-modules/blob/ba53e1a0becde25b0644fbf886234669c9b285e3/lib/misc.nix>
